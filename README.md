@@ -10,6 +10,11 @@ git clone git@github.com:PentheusLennuye/mmai894_team_assignment.git
 cd mmai894_team_assignment.git
 ```
 
+## Style
+
+I recommend we keep lines to 80 characters. This will make cowriting and code
+review easier. See Robert C. Martin. *Clean Code*, Pearson, 2008.
+
 ## Workflow
 
 ### 1. Create your local working branch
@@ -21,14 +26,35 @@ from the "main" branch.
 git checkout develop
 git pull
 git checkout -b lastname/title  # example cummings/lstm_v2
+git push -u origin lastname/title
 ```
 
 ### 2. Work on your local working branch
 
 "Commit often and push once"
 
-Have at it! Remember to commit often so if you make a mistake, you can revert
-your mistake with a `git checkout -- <filename>`
+  - Have at it!
+  - Remember to commit often so if you make a mistake, you can revert it
+    ```
+    git add .  # This basically adds everything into a change set
+    git commit -m'This is a descriptive message.'
+    ```
+  - If you love your team, use a good commit message each commit! *A commit
+    message shows whether a developer is a good collaborator* - Peter Hutterer.
+  - If you messed up and need to go back to your last save point, revert with:
+    ```
+    git checkout -- <filename>
+    ```
+
+We will figure out a decent commit message as we go along, but for starters, here are some example:
+
+  - "feature: Add new lstm model after first cnn"
+  - "fix: Changed bidirectional lstm input params. Resolved training crash."
+  - "docs: Inserted example commit messages to README"
+  - "refactor: Moved hyperparameter exploration into a loop. Changed function names."
+  - "style: Fixed lines 210 - 259 to stay within 80 characters."
+
+See https://dev.to/wordssaysalot/art-of-writing-a-good-commit-message-56o7
 
 ### 3. Save and push your local working branch to github
 
