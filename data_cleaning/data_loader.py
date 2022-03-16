@@ -13,7 +13,6 @@ def data_loading_transform_save(file_path, file_name, output_path):
     file_output_name = file_name.split(".")[0]
     np.savez_compressed(f'{output_path}/{file_output_name}.npz', gray_img)
     del gray_img
-    print(f'{file_name} converted')
 
 
 def load_compressed_pic(file_path, file_name):
@@ -21,6 +20,14 @@ def load_compressed_pic(file_path, file_name):
     # load dict of arrays
     data = np.load(f"{file_path}/{file_name}")
     return data
+
+
+def select_files_from_balanced_label(select_label_per_class, train_labels_df):
+    # Note that we have almost balanced labels from the training dataset, around 450 each.
+    select_files = []
+    for i in range(250):
+        select_files += (list(train_labels_df[train_labels_df['label'] == 5]['img_name'].values[:select_label_per_class]))
+    return select_files
 
 
 def main(pics_folder_path, output_path):
