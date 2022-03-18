@@ -10,3 +10,4 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install pandas numpy matplotlib plotly jupyter \
                            scikit-learn scipy xgboost
 RUN python3 -m pip install opencv-python
+

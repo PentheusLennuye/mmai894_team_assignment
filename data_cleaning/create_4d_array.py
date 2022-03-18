@@ -19,8 +19,9 @@ DEFAULT_HEIGHT = 256
 ERR_FAILED_IMAGE = 1
 
 class FourDFromFiles:
-    '''Takes a directory full of images, converts them into a uniform 4d
-       numpy array, and saves them.'''
+    '''
+    Takes a directory full of images by consulting the "info" csv file, then
+    converts them into a uniform 4d numpy array, and saves them.'''
 
     def __init__(self):
         self.width = DEFAULT_WIDTH
@@ -105,4 +106,4 @@ class FourDFromFiles:
 
 if __name__ == '__main__':
     FourDFromFiles()
-     
+
