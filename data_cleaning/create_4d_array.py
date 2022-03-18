@@ -40,8 +40,7 @@ class FourDFromFiles:
         if self.verbose:
             print(f"Writing {self.output_filepath}")
         self.__write_file(img_4d_array)
-        if self.verbose:
-            print('Done.')
+        print('Shape of saved array: ', img_4d_array.shape)
 
     def __process_arguments(self):
         parser = argparse.ArgumentParser()
