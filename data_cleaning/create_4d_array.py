@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 '''
 Create and save a 4d numpy array to file.
+ 
+usage: create_4d_array.py [-h] [-v] [-x WIDTH] [-y HEIGHT] [-n NUMBER] -o OUTPUT <split>
+
+where <split> is test, train, or val
 '''
 
 import argparse
