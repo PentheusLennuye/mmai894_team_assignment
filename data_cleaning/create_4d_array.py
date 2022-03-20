@@ -10,9 +10,11 @@ where <split> is test, train, or val
 import argparse
 import csv
 import os
+import random
 
 import cv2
 import numpy as np
+import tqdm
 
 WORKDIR = os.path.join('..', 'MMAI2022_Watts', 'images')
 
@@ -34,6 +36,7 @@ class FourDFromFiles:
         self.split = None
         self.output_filepath = None
         self.verbose = False
+        self.file_list = {}  # keyed to label
         self.images = []  # The 3d numpy array
 
         self.__process_arguments()
@@ -76,15 +79,26 @@ class FourDFromFiles:
             return self.__set_array_from_csv(csv_reader, image_file_dir)
 
     def __set_array_from_csv(self, csv_reader, image_file_dir):
-        i = 0
+        # Ensure that every label is represented
+        self.__build_file_list(csv_reader)
+        self.__add_images_from_file_list(image_file_dir)
+         
+    def __build_file_list(self, csv_reader):
         for row in csv_reader:
-            i += 1
-            if i > self.num_images:
-                break
-            image_file_path = os.path.join(image_file_dir, row[0])
-            if self.verbose:
-                print(image_file_path)  # Just so we know where we're at
-            self.__add_image_from_file(image_file_path)
+            if row[1] not in self.file_list:
+                self.file_list[row[1]] = []
+            self.file_list[row[1]].append(row[0])
+        if self.verbose:
+            print("Number of labels: %s", len(self.file_list))
+
+    def __add_images_from_list_list(self, image_file_dir):
+        for item in tqdm.tqdm(self.file_list.items()):
+            label_samples = random.sample(
+                item[1], self.num_images
+            )
+            for filename in label_samples:
+                image_file_path = os.path.join(image_file_dir, filename)
+                self.__add_image_from_file(image_file_path)
 
     def __add_image_from_file(self, image_file_path):
         try:
