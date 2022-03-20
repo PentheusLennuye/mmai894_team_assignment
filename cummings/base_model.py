@@ -15,6 +15,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import (Dense, Dropout, Conv2D, MaxPooling2D,
                                      Flatten)
 
+'''
 CLEANED_DATA = os.path.join('..', 'data_cleaning')
 TRAINING_SAMPLES = os.path.join(CLEANED_DATA, 'training_samples.npy')
 RANDOM_SEED = 42
@@ -111,3 +112,4 @@ def eval_model(model, X_test, Y_test):
                                               batch_size=128,
                                               verbose=1)
     return test_loss, test_accuracy
+'''
