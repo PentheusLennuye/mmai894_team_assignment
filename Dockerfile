@@ -1,4 +1,5 @@
 FROM python:3.10-bullseye
+ARG TARGETPLATFORM
 
 # Provides a container with all needed for some MMAI RNN goodness
 # Outside a VS Code devcontainer, use as follows:
@@ -24,10 +25,15 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip
 RUN python3 -m pip install --no-cache-dir pandas numpy matplotlib plotly \
      jupyter scikit-learn scipy xgboost opencv-python
 RUN python3 -m pip install tqdm  # for progress bars
-RUN python3 -m pip install tensorflow
+
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+	python3 -m pip install tensorflow; fi
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+	python3 -m pip install tensorflow-aarch64 \
+        -f https://tf.kmtea.eu/whl/stable.html; fi
 
 RUN useradd -ms /bin/bash apprunner
 RUN mkdir /app && chown apprunner /app
 USER apprunner
 WORKDIR /app
-ENTRYPOINT ["python3"]
+CMD ["python3"]

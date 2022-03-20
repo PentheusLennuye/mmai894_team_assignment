@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 import tqdm
 
-WORKDIR = os.path.join('..', 'MMAI2022_Watts', 'images')
+WORKDIR = os.path.join('MMAI2022_Watts', 'images')
 
 DEFAULT_NUM_IMAGES = 5
 DEFAULT_WIDTH = 256
@@ -38,16 +38,17 @@ class FourDFromFiles:
         self.verbose = False
         self.file_list = {}  # keyed to label
         self.images = []  # The 3d numpy array
+        self.labels = []  # A vector of labels
 
         self.__process_arguments()
         if self.verbose:
             print(f"Processing first {self.num_images} files for split "
                   f"{self.split}: setting to ({self.width}x{self.height})")
         self.__set_img_array()
-        img_4d_array = np.stack(self.images, axis=0)  # This is our 4d array
         if self.verbose:
-            print(f"Writing {self.output_filepath}")
-        self.__write_file(img_4d_array)
+            print('Stacking to 4d')
+        img_4d_array = np.stack(self.images, axis=0)  # This is our 4d array
+        self.__write_files(img_4d_array)
         print('Shape of saved array: ', img_4d_array.shape)
 
     def __process_arguments(self):
@@ -82,23 +83,27 @@ class FourDFromFiles:
         # Ensure that every label is represented
         self.__build_file_list(csv_reader)
         self.__add_images_from_file_list(image_file_dir)
-         
+
     def __build_file_list(self, csv_reader):
         for row in csv_reader:
             if row[1] not in self.file_list:
                 self.file_list[row[1]] = []
             self.file_list[row[1]].append(row[0])
         if self.verbose:
-            print("Number of labels: %s", len(self.file_list))
+            num_labels = len(self.file_list)
+            print(f"Number of labels: {num_labels}")
 
-    def __add_images_from_list_list(self, image_file_dir):
+    def __add_images_from_file_list(self, image_file_dir):
         for item in tqdm.tqdm(self.file_list.items()):
-            label_samples = random.sample(
-                item[1], self.num_images
+            label = item[0]
+            filename = item[1]
+            samples = random.sample(
+                filename, self.num_images
             )
-            for filename in label_samples:
+            for filename in samples:
                 image_file_path = os.path.join(image_file_dir, filename)
-                self.__add_image_from_file(image_file_path)
+                if self.__add_image_from_file(image_file_path):
+                    self.labels.append(label)
 
     def __add_image_from_file(self, image_file_path):
         try:
@@ -115,12 +120,18 @@ class FourDFromFiles:
             print(f"ValueError Exception loading {image_file_path}")
             return False
         self.images.append(img_rgb_resized)
+        return True
 
-    def __write_file(self, img_array):
-        np.save(
-            os.path.join(self.output_filepath), img_array, allow_pickle=True
+    def __write_files(self, img_array):
+        if self.verbose:
+            print("Saving numpy as pickle")
+        np.save(self.output_filepath + '_X.npy', img_array, allow_pickle=True)
+        if self.verbose:
+            print("Saving labels as npy")
+        np.save(self.output_filepath + '_Y.npy',
+                np.asarray(self.labels),
+                allow_pickle=True
         )
-
 
 if __name__ == '__main__':
     FourDFromFiles()
