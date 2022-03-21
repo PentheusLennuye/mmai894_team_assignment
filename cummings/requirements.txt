@@ -1,0 +1,11 @@
+# To be used if not using Docker or VS Code
+pandas
+numpy
+matplotlib
+plotly
+jupyter
+scikit-learn
+scipy
+xgboost
+opencv-python
+tqdm

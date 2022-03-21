@@ -12,9 +12,7 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip
 RUN python3 -m pip install --no-cache-dir pandas numpy matplotlib plotly \
      jupyter scikit-learn scipy xgboost opencv-python
 RUN python3 -m pip install tqdm  # for progress bars
-RUN echo "TARGETPLATFORM is ${TARGETPLATFORM}"
-# Uncomment if running on Intel Linux
-# RUN python3 -m pip install tensorflow
-# Uncomment if running on a Mac M1
-RUN python3 -m pip install tensorflow-aarch64 \
-    -f https://tf.kmtea.eu/whl/stable.html
+
+RUN uname -m | grep amd64 && python3 -m pip install tensorflow;  true
+RUN uname -m | grep aarch64 && python3 -m pip install tensorflow-aarch64 \
+    -f https://tf.kmtea.eu/whl/stable.html; true

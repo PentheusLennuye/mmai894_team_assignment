@@ -2,10 +2,10 @@ FROM python:3.10-bullseye
 ARG TARGETPLATFORM
 
 # Provides a container with all needed for some MMAI RNN goodness
-# Outside a VS Code devcontainer, use as follows:
+# This requires Docker with the BuildKit backend.
 
 # Build:
-# docker build -t <image name> .  # e.g. docker build -t gmc/mmai .
+# DOCKER_BUILDKIT=1 docker build -t <image name> .  # e.g. docker build -t gmc/mmai .
 
 # Run a python script in the local directory:
 # docker run --rm -v $(pwd):/app <image name> <python file>
@@ -28,6 +28,7 @@ RUN python3 -m pip install tqdm  # for progress bars
 
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
 	python3 -m pip install tensorflow; fi
+
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
 	python3 -m pip install tensorflow-aarch64 \
         -f https://tf.kmtea.eu/whl/stable.html; fi
