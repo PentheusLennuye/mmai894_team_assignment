@@ -11,7 +11,7 @@ def data_loading_transform_save(file_path, file_name, output_path):
     # Normalize, rescale entries to lie in [0,1]
     gray_img = gray_img.astype("float32")/255
     file_output_name = file_name.split(".")[0]
-    np.savez_compressed(f'{output_path}/{file_output_name}.npz', gray_img)
+    np.save(f'{output_path}/{file_output_name}.npy', gray_img)
     del gray_img
 
 
@@ -26,7 +26,7 @@ def select_files_from_balanced_label(select_label_per_class, train_labels_df):
     # Note that we have almost balanced labels from the training dataset, around 450 each.
     select_files = []
     for i in range(250):
-        select_files += (list(train_labels_df[train_labels_df['label'] == 5]['img_name'].values[:select_label_per_class]))
+        select_files += (list(train_labels_df[train_labels_df['label'] == i]['img_name'].values[:select_label_per_class]))
     return select_files
 
 
