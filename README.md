@@ -91,3 +91,22 @@ are ready for glory, push to the *develop* branch:
 ### 5. Rinse, and Repeat
 
 Create another branch, and work on it as above.
+
+## Development
+
+### Python virtual environments
+
+### Docker
+
+See Dockerfile for information on how to use.
+
+### VS Code
+
+Microsoft VS Code can be used for containerization. This would eliminate the
+need for installing Python environments. Ensure VSCode has the **Remote
+Development** extension pack installed. Opening this directory will build and
+start the Docker container with the appropriate python version and packages
+ready to go. Your .gitconfig will be transferred over, but the files you need
+if using *Include* or *IfInclude* will not. Note that *.devcontainer/Dockerfile*
+is not identical to the *Dockerfile* in the parent directory.
+
