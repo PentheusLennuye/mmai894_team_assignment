@@ -1,20 +1,39 @@
 #!/usr/bin/env python3
 '''
-Create and save a 4d numpy array to file.
+Pull a number of jpeg files for each label, then save a 4d numpy array to file
+along with a label file.
 
-usage: create_4d_array.py [-h] [-v] [-x WIDTH] [-y HEIGHT] [-n NUMBER] -o OUTPUT <split>
+usage: create_4d_array.py [-h] [-v] [-i INCLUDE] [-x WIDTH] [-y HEIGHT] [-n NUMBER] -o OUTPUT <split>
 
-where <split> is test, train, or val
+   where <split> is test, train, or val;
+   INCLUDE is a comma-delimited list of labels, e.g. 211,232,342;
+   NUMBER is the number of images per label; and
+   OUTPUT is a path and file prefix
+
+example:
+   export WORKDIR=MMAI2022_Watts/images
+   data_cleaning/create_4d_array.py -v -i 211,243,252 -x 128 -y 128 -n 10 \
+        -o data_cleaning/training_samples train
+
+   Creates a (30, 128, 128, 3) numpy array from MMAI2022_Watts/images/train_info.csv
+   and the images in MMAI2022_Watts/images/train_set
+   and saves it to data_cleaning/training_samples_X.npy, along with matching
+   labels in data_cleaning/training_samples_Y.npy
+
+   If INCLUDE is not set, all labels are included.
 '''
 
 import argparse
 import csv
 import os
+import random
 
 import cv2
 import numpy as np
+import tqdm
 
-WORKDIR = os.path.join('..', 'MMAI2022_Watts', 'images')
+WORKDIR = os.getenv('WORKDIR',
+                    os.path.join('MMAI2022_Watts', 'images'))
 
 DEFAULT_NUM_IMAGES = 5
 DEFAULT_WIDTH = 256
@@ -34,22 +53,27 @@ class FourDFromFiles:
         self.split = None
         self.output_filepath = None
         self.verbose = False
+        self.file_list = {}  # keyed to label
         self.images = []  # The 3d numpy array
+        self.labels = []  # A vector of labels
+        self.include = []
 
         self.__process_arguments()
         if self.verbose:
             print(f"Processing first {self.num_images} files for split "
                   f"{self.split}: setting to ({self.width}x{self.height})")
         self.__set_img_array()
-        img_4d_array = np.stack(self.images, axis=0)  # This is our 4d array
         if self.verbose:
-            print(f"Writing {self.output_filepath}")
-        self.__write_file(img_4d_array)
+            print('Stacking to 4d')
+        img_4d_array = np.stack(self.images, axis=0)  # This is our 4d array
+        self.__write_files(img_4d_array)
         print('Shape of saved array: ', img_4d_array.shape)
 
     def __process_arguments(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('-v', '--verbose', action='store_true')
+        parser.add_argument('-i', '--include', default=DEFAULT_WIDTH, type=str,
+                            help='Comma-delimited list of included labels')
         parser.add_argument('-x', '--width', default=DEFAULT_WIDTH, type=int,
                             help='Output width of the numpy image')
         parser.add_argument('-y', '--height', default=DEFAULT_HEIGHT, type=int,
@@ -61,6 +85,7 @@ class FourDFromFiles:
         parser.add_argument('split',
                             help='train, test, or val')
         args = parser.parse_args()
+        self.include = args.include.split(',')
         self.num_images = args.number
         self.width = args.width
         self.height = args.height
@@ -76,15 +101,32 @@ class FourDFromFiles:
             return self.__set_array_from_csv(csv_reader, image_file_dir)
 
     def __set_array_from_csv(self, csv_reader, image_file_dir):
-        i = 0
+        # Ensure that every label is represented
+        self.__build_file_list(csv_reader)
+        self.__add_images_from_file_list(image_file_dir)
+
+    def __build_file_list(self, csv_reader):
         for row in csv_reader:
-            i += 1
-            if i > self.num_images:
-                break
-            image_file_path = os.path.join(image_file_dir, row[0])
-            if self.verbose:
-                print(image_file_path)  # Just so we know where we're at
-            self.__add_image_from_file(image_file_path)
+            if self.include and row[1] not in self.include:
+                continue
+            if row[1] not in self.file_list:
+                self.file_list[row[1]] = []
+            self.file_list[row[1]].append(row[0])
+        if self.verbose:
+            num_labels = len(self.file_list)
+            print(f"Number of labels: {num_labels}")
+
+    def __add_images_from_file_list(self, image_file_dir):
+        for item in tqdm.tqdm(self.file_list.items()):
+            label = item[0]
+            filename = item[1]
+            samples = random.sample(
+                filename, self.num_images
+            )
+            for filename in samples:
+                image_file_path = os.path.join(image_file_dir, filename)
+                if self.__add_image_from_file(image_file_path):
+                    self.labels.append(label)
 
     def __add_image_from_file(self, image_file_path):
         try:
@@ -101,12 +143,18 @@ class FourDFromFiles:
             print(f"ValueError Exception loading {image_file_path}")
             return False
         self.images.append(img_rgb_resized)
+        return True
 
-    def __write_file(self, img_array):
-        np.save(
-            os.path.join(self.output_filepath), img_array, allow_pickle=True
+    def __write_files(self, img_array):
+        if self.verbose:
+            print("Saving numpy as pickle")
+        np.save(self.output_filepath + '_X.npy', img_array, allow_pickle=True)
+        if self.verbose:
+            print("Saving labels as npy")
+        np.save(self.output_filepath + '_Y.npy',
+                np.asarray(self.labels),
+                allow_pickle=True
         )
-
 
 if __name__ == '__main__':
     FourDFromFiles()
